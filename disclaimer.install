@@ -1,0 +1,60 @@
+<?php
+
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\node\Entity\Node;
+
+/**
+ * Implements hook_install().
+ */
+function disclaimer_install() {
+  $field_name = 'field_disclaimer';
+
+  foreach (['article', 'page'] as $bundle) {
+    $form_display = EntityFormDisplay::load('node' . '.' . $bundle . '.' . 'default');
+    $form_display->setComponent($field_name, [
+      'type' => 'options_select',
+      'weight' => 10,
+      'region' => 'content',
+      'settings' => [],
+      'third_party_settings' => [],
+    ])->save();
+
+    $view_display = EntityViewDisplay::load('node.'. $bundle. '.default');
+    $view_display->setComponent($field_name, [
+      'type' => 'disclaimer',
+      'weight' => 10,
+      'region' => 'content',
+      'label' => 'hidden',
+      'settings' => [],
+      'third_party_settings' => [],
+    ])->save();
+  }
+
+  // Create Disclaimer example node.
+  Node::create([
+    'langcode' => 'en',
+    'type' => 'disclaimer',
+    'title' => 'Important information',
+    'body' => <<<HTML
+<p><strong>The following sections of this website may only be accessed by persons who satisfy either of the following criteria:</strong></p>
+
+<p>i) a regulated financial entity (this may include banks, stockbrokers, securities houses, investment managers, insurance companies, collective investment schemes, pension funds and financial intermediaries) which is regulated by its local country regulator;</p>
+
+<p>ii) an institutional investor or investment professional whose primary function is to operate in the financial markets involving regulated financial activity as defined by its local country regulator.</p>
+
+<p><strong>If you do not satisfy either of the above criteria or you are unsure if you satisfy them, press the “Decline” button below and do not proceed any further.</strong></p>
+
+<p><strong>If you do satisfy either of the above criteria, please press the “Accept” button below in order to proceed to the following sections of this website.</strong></p>
+
+<p>You must not pass on any information contained in the following sections of this website to third parties unless such disclosure is permitted by applicable local law and regulation. The value of an investment and any income derived from it can go down as well as up and investors may not get back their original amount invested. Alternative investments can involve significant additional risks.</p>
+HTML,
+  ])->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function disclaimer_uninstall() {
+  // @todo: Revert config changes made by this module.
+}
